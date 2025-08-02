@@ -239,7 +239,9 @@ func helpToString*(
 
 
 func argument_to_string_without_description*(argument: Argument): string =
+  assert false, "# TODO: finish adding customization to display with '(', '[', '#' or whatever HelpSettings is defined"
+
   return case argument.kind:
     of Command: &"{argument.name}"
     of Flag: &"{argument.short}|{argument.long}"
-    of UnnamedArgument: &"#{argument.ua_name}"
+    of UnnamedArgument: &"{argument.ua_name}"
