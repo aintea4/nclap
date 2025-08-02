@@ -6,7 +6,8 @@ import std/[
   sequtils,
   tables,
   macros,
-  options
+  options,
+  algorithm,
 ]
 
 import arguments
@@ -20,6 +21,7 @@ const
   DEFAULT_ENFORCE_SHORT* = false
   NO_COLORS* = false
   EXIT_ON_ERROR* = true
+  TABDESC_LENGTH = 4
 
 
 type
@@ -36,25 +38,93 @@ func `$`*(parser: Parser): string =
   &"Parser(arguments: {parser.arguments}, helpmsg: \"{parser.helpmsg}\")"
 
 
+proc showHelpAux(
+  parser: Parser,
+  arguments: seq[Argument],
+  printfun: proc(s: string),
+  tabdesc_length: Natural,
+  min_tabdesc_pad: Natural,
+  exit_code: Natural = 0,
+  depth: Natural = 0,
+) =
+  if depth >= parser.help_settings.showhelp_depth:
+    return
+
+  let indent_str = (parser.help_settings.tabstring).repeat(depth)
+  var called_subcommand = false
+
+  for arg in arguments:
+    if arg.kind == Command and depth+1 < parser.help_settings.showhelp_depth:
+      printfun ""
+
+    let arg_str = alignLeft(indent_str & argument_to_string_without_description(arg), min_tabdesc_pad + TABDESC_LENGTH) & arg.description
+
+    printfun arg_str
+
+    let has_subcommands = arg.kind == Command and arg.subcommands.len != 0
+
+    if has_subcommands:
+      showHelpAux(parser, arg.subcommands, printfun, tabdesc_length, min_tabdesc_pad, exit_code, depth+1)
+      called_subcommand = true
+
+
+
+
+
 proc showHelp*(
   parser: Parser,
-  exit_code: int = 0,
+  exit_code: Natural = 0,
 ) =
   ##[ Shows an auto-generated help message and exits the program with code `exit_code` if `parser.exit_on_error` is set
   ]##
 
+  let
+    min_tabdesc_pad = parser.arguments
+      .map(arg => argument_to_string_without_description(arg).len)
+      .max()
+
+    arguments = parser.arguments
+      .map(arg => (
+        (arg, case arg.kind:
+          of UnnamedArgument: 0
+          of Flag: 1
+          of Command: 2
+        )
+      )).sorted(proc(x, y: (Argument, int)): int =
+        let
+          (_, a) = x
+          (_, b) = y
+
+        return (
+          if a < b: -1
+          elif a == b: 0
+          else: 1
+        )
+      )
+      .map(x => x[0])
+
   echo parser.helpmsg
 
-  for i in 0..<parser.arguments.len:
-    let
-      arg = parser.arguments[i]
-      is_first = (i == 0)
-      is_last = (i == parser.arguments.len - 1)
+  #for i in 0..<parser.arguments.len:
+  #  let
+  #    arg = parser.arguments[i]
+  #    is_first = (i == 0)
+  #    is_last = (i == parser.arguments.len - 1)
+  #
+  #  echo helpToString(arg, parser.help_settings, is_first=is_first, is_last=is_last)
+  #
+  #if parser.exit_on_error:
+  #  quit(exit_code)
 
-    echo helpToString(arg, parser.help_settings, is_first=is_first, is_last=is_last)
-
-  if parser.exit_on_error:
-    quit(exit_code)
+  showHelpAux(
+    parser,
+    arguments,
+    (s: string) => stderr.writeLine(s),
+    TABDESC_LENGTH,
+    min_tabdesc_pad=min_tabdesc_pad,
+    exit_code,
+    0
+  )
 
 
 template error_exit(

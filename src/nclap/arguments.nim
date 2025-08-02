@@ -12,6 +12,7 @@ const
   COMMAND_REQUIRED_DEFAULT* = true
   UNNAMED_ARGUMENT_PREFIX* = "$"
   HOLDS_VALUE_DEFAULT* = false
+  SHOWHELP_DEPTH_DEFAULT* = 2
   DEFAULT_SHOWHELP_SETTINGS* = (
     tabstring: "  ",
     prefix_pretab: "",
@@ -22,7 +23,8 @@ const
     surround_right_required: ")",
     surround_left_optional: "[",
     surround_right_optional: "]",
-    separator: "|"
+    separator: "|",
+    showhelp_depth: SHOWHELP_DEPTH_DEFAULT
   )
 
 type
@@ -36,7 +38,8 @@ type
     surround_right_required: string,
     surround_left_optional: string,
     surround_right_optional: string,
-    separator: string
+    separator: string,
+    showhelp_depth: int
   ]
 
   ArgumentType* = enum
@@ -176,7 +179,8 @@ func helpToStringAux(
       surround_right_required,
       surround_left_optional,
       surround_right_optional,
-      separator
+      separator,
+      showhelp_depth
     ) = settings
     #tabrepeat = tabstring.repeat(depth)
     tabrepeat = tabstring.repeat(depth)
@@ -232,3 +236,10 @@ func helpToString*(
   is_last: bool = false
 ): string =
   helpToStringAux(argument, settings, 0, is_first, is_last)
+
+
+func argument_to_string_without_description*(argument: Argument): string =
+  return case argument.kind:
+    of Command: &"{argument.name}"
+    of Flag: &"{argument.short}|{argument.long}"
+    of UnnamedArgument: &"#{argument.ua_name}"
