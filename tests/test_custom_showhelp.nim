@@ -44,6 +44,3 @@ test "customizing help message":
   #  .addFlag("-d", "-d", "directory in which to do stuff")
 
   p.showHelp()
-
-  #let args = p.parse()
-  #echo args

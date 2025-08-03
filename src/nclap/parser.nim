@@ -70,17 +70,24 @@ proc showHelpAux(
 
 proc showHelp*(
   parser: Parser,
+  argument: Option[Argument] = none[Argument](),
   exit_code: Natural = 0,
 ) =
   ##[ Shows an auto-generated help message and exits the program with code `exit_code` if `parser.exit_on_error` is set
   ]##
 
   let
+    args = (
+      if argument.isSome: @[argument.get()]
+      else: parser.arguments
+    )
+
+    # TODO: maybe check the biggest recursively, for the moment it only works with `showhelp_depth` equal to 2
     min_tabdesc_pad = parser.arguments
       .map(arg => argument_to_string_without_description(arg).len)
       .max()
 
-    arguments = parser.arguments
+    arguments = args
       .map(arg => (
         (arg, case arg.kind:
           of UnnamedArgument: 0
@@ -100,7 +107,8 @@ proc showHelp*(
       )
       .map(x => x[0])
 
-  echo parser.helpmsg
+  if argument.isNone:
+    echo parser.helpmsg
 
   showHelpAux(
     parser,
@@ -118,13 +126,18 @@ template error_exit(
   error_type: typedesc,
   error_message: string,
   exit_code: int,
-  display_helpmessage: bool
+  display_helpmessage: bool,
+  missing_arguments: seq[Argument]
 ): untyped =
   if parser.exit_on_error:
     echo error("ERROR." & $error_type, error_message, parser.no_colors)
 
     if display_helpmessage:
-      parser.showHelp(exit_code)
+      if missing_arguments.len != 0:
+        for missing_argument in missing_arguments:
+          parser.showHelp(some[Argument](missing_argument), exit_code)
+      else:
+        parser.showHelp(exit_code=exit_code)
 
     quit exit_code
   else:
@@ -169,13 +182,17 @@ proc addArgument*(parser: var Parser, argument: Argument): var Parser {.discarda
       of Flag:
         # NOTE: 1 for the "-" and 1 for the character, 1+1=2 (I'm a genius I know)
         # NOTE: more seriously, this is enforcing one char length short flags
+
+        let exit_code = INVALID_ARGUMENT_EXIT_CODE
+
         if len(argument_check.short) != 2:
           error_exit(
             parser,
             FieldDefect,
             &"[ERROR.invalid-argument] `parser.enforce_short` is true, but the short flag is more than 1 character: {argument.short}",
-            INVALID_ARGUMENT_EXIT_CODE,
-            false
+            exit_code,
+            false,
+            newSeq[Argument]()
           )
 
         parser.arguments.add(argument_check)
@@ -196,12 +213,15 @@ proc addCommand*(
   required: bool = COMMAND_REQUIRED_DEFAULT,
 ): var Parser {.discardable.} =
   if name.startsWith('-'):
+    let exit_code = INVALID_ARGUMENT_EXIT_CODE
+
     error_exit(
       parser,
       FieldDefect,
       &"A command cannot start with a '-': {name}",
-      INVALID_ARGUMENT_EXIT_CODE,
-      false
+      exit_code,
+      false,
+      newSeq[Argument]()
     )
 
   parser.addArgument(newCommand(name, subcommands, description, required))
@@ -219,12 +239,15 @@ proc addFlag*(
   # NOTE: this is a design choice, long flags can start with only a dash,
   # since if no long flag is given, the long flag will just be the short flag
   if not (short.startsWith('-') and long.startsWith('-')):
+    let exit_code = INVALID_ARGUMENT_EXIT_CODE
+
     error_exit(
       parser,
       FieldDefect,
       &"A flag must start with a '-': {short}|{long}",
-      INVALID_ARGUMENT_EXIT_CODE,
-      false
+      exit_code,
+      false,
+      newSeq[Argument]()
     )
 
   parser.addArgument(newFlag(short, long, description, holds_value, required, default))
@@ -291,12 +314,16 @@ proc getCommand(arguments: seq[Argument], argument_name: string, parser: Parser)
       return argument
 
   # NOTE: should be impossible since we check before calling this function
+
+  let exit_code = INVALID_ARGUMENT_EXIT_CODE
+
   error_exit(
     parser,
     FieldDefect,
     &"Invalid command: '{argument_name}'",
-    INVALID_ARGUMENT_EXIT_CODE,
-    false
+    exit_code,
+    false,
+    newSeq[Argument]()
   )
 
 
@@ -306,12 +333,16 @@ proc getUnnamedArgument(arguments: seq[Argument], argument_name: string, parser:
       return argument
 
   # NOTE: should be impossible since we check before calling this function
+
+  let exit_code = INVALID_ARGUMENT_EXIT_CODE
+
   error_exit(
     parser,
     FieldDefect,
     &"Invalid flag: '{argument_name}'",
-    INVALID_ARGUMENT_EXIT_CODE,
-    false
+    exit_code,
+    false,
+    newSeq[Argument]()
   )
 
 
@@ -353,12 +384,15 @@ proc getFlag(arguments: seq[Argument], argument_name: string, parser: Parser): A
       return argument
 
   # NOTE: should be impossible since we check before calling this function
+  let exit_code = INVALID_ARGUMENT_EXIT_CODE
+
   error_exit(
     parser,
     FieldDefect,
     &"Invalid flag: '{argument_name}'",
-    INVALID_ARGUMENT_EXIT_CODE,
-    false
+    exit_code,
+    false,
+    newSeq[Argument]()
   )
 
 
@@ -398,12 +432,15 @@ proc parseFlags(
           # NOTE: I had a choice: either throw error or quit, I was too lazy to handle the error in `parseArgs` where `parseFlags` is called (but both are equivalent
           # even though handling the error in `parseArgs` is way better since this function should not quit unexpectedly)
 
+          let exit_code = INVALID_ARGUMENT_EXIT_CODE
+
           error_exit(
             parser,
             ValueError,
             &"Expected a value after the flag '{current_argv}'",
-            INVALID_ARGUMENT_EXIT_CODE,
-            false
+            exit_code,
+            false,
+            newSeq[Argument]()
           )
 
         content = argv[depth]
@@ -509,12 +546,15 @@ proc parseArgs(
         o_current_ua = otype
         current_ua: Argument = (
           if o_current_ua.isNone:  # FIXME: useless since we check it in the if
+            let exit_code =INVALID_ARGUMENT_EXIT_CODE
+
             error_exit(
               parser,
               ValueError,
               "Invalid supplementary unnamed argument",
-              INVALID_ARGUMENT_EXIT_CODE,
-              true
+              exit_code,
+              true,
+              newSeq[Argument]()
             )
           else: o_current_ua.get()
         )
@@ -719,8 +759,11 @@ proc parse*(parser: Parser, argv: seq[string]): CLIArgs =
   if missing_required_o.isSome:
     assert missing_required_o.get().len != 0
 
-    let missing_required_names = missing_required_o.get()
+    let
+      missing_required_arguments = missing_required_o.get()
       .map(cmd_pair => cmd_pair[0])
+
+      missing_required_names = missing_required_arguments
       .map(cmd => (
         let name = case cmd.kind:
           of Command: cmd.name
@@ -731,13 +774,20 @@ proc parse*(parser: Parser, argv: seq[string]): CLIArgs =
       )).join(" | ")
 
     # TODO: make better error message because this is barely understandable to the end user
+    let exit_code = INVALID_ARGUMENT_EXIT_CODE
+
+    #for missing_arg in missing_required_arguments:
+    #  parser.showHelp(some[Argument](missing_arg), exit_code)
+
     error_exit(
       parser,
       FieldDefect,
       &"missing one of: {missing_required_names}",
-      INVALID_ARGUMENT_EXIT_CODE,
-      true
+      exit_code,
+      true,
+      missing_required_arguments
     )
+
 
   res
 

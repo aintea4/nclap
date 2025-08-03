@@ -32,3 +32,6 @@ test "customizing help message":
     Flag("-d", description="directory in which to do stuff")
 
   p.showHelp()
+
+  #let args = p.parse()
+  #echo args
