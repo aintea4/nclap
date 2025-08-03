@@ -276,7 +276,7 @@ test "compact shortflags":
 
 
 #test "subcommands content":
-#  var p = newParser("customizing help message", DEFAULT_SHOWHELP_SETTINGS, DEFAULT_ENFORCE_SHORT, false, true)
+#  var p = newParser("customizing help message", HelpSettings(), DEFAULT_ENFORCE_SHORT, false, true)
 #
 #  p.addCommand("add", @[newCommand("task", @[], "adds a task", true, true), newCommand("project", @[], "adds a project", true, true)], "")
 #    .addCommand("remove", @[newCommand("task", @[newFlag("-n", "--no-log", "does not log the deletion")], "removes a task", true, true), newCommand("project", @[], "removes a project", true, true)], "")
@@ -300,7 +300,7 @@ test "compact shortflags":
 test "default param":
   let default_target = "127.0.0.1"
 
-  var p = newParser("default param", DEFAULT_SHOWHELP_SETTINGS, DEFAULT_ENFORCE_SHORT, false, true)
+  var p = newParser("default param", HelpSettings(), DEFAULT_ENFORCE_SHORT, false, true)
 
   p
     .addFlag("-t", "--target", "target ip address", true, true, default=some(default_target))
@@ -314,7 +314,7 @@ test "default param":
 
 
 test "dot flag access":
-  var p = newParser("dot flag access", DEFAULT_SHOWHELP_SETTINGS, DEFAULT_ENFORCE_SHORT, false, true)
+  var p = newParser("dot flag access", HelpSettings(), DEFAULT_ENFORCE_SHORT, false, true)
 
   p
     .addFlag("-t", "--target", "directory in which to do stuff", true, true, default=some("127.0.0.1"))
@@ -328,7 +328,7 @@ test "dot flag access":
 
 
 test "unnamed arguments":
-  var p = newParser("unnamed arguments", DEFAULT_SHOWHELP_SETTINGS, DEFAULT_ENFORCE_SHORT, false, true)
+  var p = newParser("unnamed arguments", HelpSettings(), DEFAULT_ENFORCE_SHORT, false, true)
 
   p
     .addUnnamedArgument("target", default=some("127.0.0.1"))
@@ -344,7 +344,7 @@ test "unnamed arguments":
 
 test "total":
   let default_target = "127.0.0.1"
-  var p = newParser("total", DEFAULT_SHOWHELP_SETTINGS, DEFAULT_ENFORCE_SHORT, false, true)
+  var p = newParser("total", HelpSettings(), DEFAULT_ENFORCE_SHORT, false, true)
 
   p
     .addUnnamedArgument("target", default=some(default_target))

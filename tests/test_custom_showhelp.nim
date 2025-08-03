@@ -3,7 +3,7 @@ import
   testutils
 
 test "customizing help message":
-  let settings: HelpSettings = (
+  let settings = HelpSettings(
     tabstring: "│   ",
     prefix_pretab: "-> ",
     prefix_posttab_first: "├─ ",
@@ -14,8 +14,9 @@ test "customizing help message":
     surround_left_optional: "{",
     surround_right_optional: "}",
     separator: ", ",
-    showhelp_depth: 2.Natural
+    showhelp_depth: 2
   )
+
   var p = newParser("customizing help message", settings)
 
   initParser(p):
