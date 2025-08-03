@@ -80,7 +80,7 @@ type
 func newFlag*(
   short: string,
   long: string = short,
-  description: string = long,
+  description: string = "",
   holds_value: bool = FLAG_HOLDS_VALUE_DEFAULT,
   required: bool = FLAG_REQUIRED_DEFAULT,
   default: Option[string] = none[string]()
@@ -98,7 +98,7 @@ func newFlag*(
 func newCommand*(
   name: string,
   subcommands: seq[Argument] = @[],
-  description: string = name,
+  description: string = "",
   required: bool = COMMAND_REQUIRED_DEFAULT,
   #holds_value: bool = HOLDS_VALUE_DEFAULT,
   #default: Option[string] = none[string]()
@@ -116,7 +116,7 @@ func newCommand*(
 
 func newUnnamedArgument*(
   name: string,
-  description: string = name,
+  description: string = "",
   default: Option[string] = none[string]()
 ): Argument =
   Argument(
