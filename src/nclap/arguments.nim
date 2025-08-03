@@ -161,12 +161,12 @@ func getUnnamedArguments*(arguments: seq[Argument]): seq[Argument] =
   arguments.filter(arg => arg.kind == UnnamedArgument)
 
 
-func helpToStringAux(
+func argument_to_string_without_description*(
   argument: Argument,
   settings: HelpSettings = DEFAULT_SHOWHELP_SETTINGS,
-  depth: int = 0,
-  is_first: bool = true,
-  is_last: bool = false
+  #depth: int = 0,
+  #is_first: bool = true,
+  #is_last: bool = false
 ): string =
   let
     (
@@ -183,12 +183,13 @@ func helpToStringAux(
       showhelp_depth
     ) = settings
     #tabrepeat = tabstring.repeat(depth)
-    tabrepeat = tabstring.repeat(depth)
-    posttab = (
-      if is_last: prefix_posttab_last
-      elif is_first: prefix_posttab_first
-      else: prefix_posttab
-    )
+    tabrepeat = ""
+    #posttab = (
+    #  if is_last: prefix_posttab_last
+    #  elif is_first: prefix_posttab_first
+    #  else: prefix_posttab
+    #)
+    posttab = ""
 
   let
     surround_left = (if argument.required: surround_left_required else: surround_left_optional)
@@ -201,47 +202,47 @@ func helpToStringAux(
           if argument.short == argument.long: &"{surround_left}{argument.short}{surround_right}"
           else: &"{surround_left}{argument.short}{separator}{argument.long}{surround_right}"
         )
-        desc = &"{argument.description}"
+        #desc = &"{argument.description}"
 
       # NOTE: no subcommands to a flag, it is the first but more importantly the last
-      &"{prefix_pretab}{tabrepeat}{posttab}{usage}\t\t{desc}"
+      &"{prefix_pretab}{tabrepeat}{posttab}{usage}"
 
     of Command:
       var res = ""
 
       let
         usage = &"{surround_left}{argument.name}{surround_right}"
-        desc = &"{argument.description}"
+        #desc = &"{argument.description}"
 
-      res &= &"{prefix_pretab}{tabrepeat}{posttab}{usage}\t\t{desc}"
+      res &= &"{prefix_pretab}{tabrepeat}{posttab}{usage}"
 
-      for i in 0..<len(argument.subcommands):
-        let
-          subargument = argument.subcommands[i]
-          is_last_argument = (i == len(argument.subcommands)-1)
-
-        res &= "\n" & subargument.helpToStringAux(settings=settings, depth=depth+1, is_last=is_last_argument)
+      #for i in 0..<len(argument.subcommands):
+      #  let
+      #    subargument = argument.subcommands[i]
+      #    is_last_argument = (i == len(argument.subcommands)-1)
+      #
+      #  res &= "\n" & subargument.helpToStringAux(settings=settings, depth=depth+1, is_last=is_last_argument)
 
       res
 
     of UnnamedArgument:
-      &"{tabrepeat}({argument.ua_name})\t{argument.description}"
+      &"{tabrepeat}({argument.ua_name})"
       #&"[WARNING]: still not implemented"
 
 
-func helpToString*(
-  argument: Argument,
-  settings: HelpSettings = DEFAULT_SHOWHELP_SETTINGS,
-  is_first: bool = true,
-  is_last: bool = false
-): string =
-  helpToStringAux(argument, settings, 0, is_first, is_last)
+#func helpToString*(
+#  argument: Argument,
+#  settings: HelpSettings = DEFAULT_SHOWHELP_SETTINGS,
+#  is_first: bool = true,
+#  is_last: bool = false
+#): string =
+#  helpToStringAux(argument, settings, 0, is_first, is_last)
 
 
-func argument_to_string_without_description*(argument: Argument): string =
-  assert false, "# TODO: finish adding customization to display with '(', '[', '#' or whatever HelpSettings is defined"
-
-  return case argument.kind:
-    of Command: &"{argument.name}"
-    of Flag: &"{argument.short}|{argument.long}"
-    of UnnamedArgument: &"{argument.ua_name}"
+#func argument_to_string_without_description*(argument: Argument): string =
+#  assert false, "# TODO: finish adding customization to display with '(', '[', '#' or whatever HelpSettings is defined"
+#
+#  return case argument.kind:
+#    of Command: &"{argument.name}"
+#    of Flag: &"{argument.short}|{argument.long}"
+#    of UnnamedArgument: &"{argument.ua_name}"

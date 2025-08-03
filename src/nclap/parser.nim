@@ -68,9 +68,6 @@ proc showHelpAux(
       called_subcommand = true
 
 
-
-
-
 proc showHelp*(
   parser: Parser,
   exit_code: Natural = 0,
@@ -105,23 +102,12 @@ proc showHelp*(
 
   echo parser.helpmsg
 
-  #for i in 0..<parser.arguments.len:
-  #  let
-  #    arg = parser.arguments[i]
-  #    is_first = (i == 0)
-  #    is_last = (i == parser.arguments.len - 1)
-  #
-  #  echo helpToString(arg, parser.help_settings, is_first=is_first, is_last=is_last)
-  #
-  #if parser.exit_on_error:
-  #  quit(exit_code)
-
   showHelpAux(
     parser,
     arguments,
-    (s: string) => stderr.writeLine(s),
+    (s: string) => stdout.writeLine(s),
     TABDESC_LENGTH,
-    min_tabdesc_pad=min_tabdesc_pad,
+    min_tabdesc_pad,
     exit_code,
     0
   )
