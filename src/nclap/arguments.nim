@@ -12,35 +12,46 @@ const
   COMMAND_REQUIRED_DEFAULT* = true
   UNNAMED_ARGUMENT_PREFIX* = "$"
   HOLDS_VALUE_DEFAULT* = false
-  SHOWHELP_DEPTH_DEFAULT* = 2
-  DEFAULT_SHOWHELP_SETTINGS* = (
-    tabstring: "  ",
-    prefix_pretab: "",
-    prefix_posttab_first: "",
-    prefix_posttab: "",
-    prefix_posttab_last: "",
-    surround_left_required: "(",
-    surround_right_required: ")",
-    surround_left_optional: "[",
-    surround_right_optional: "]",
-    separator: "|",
-    showhelp_depth: SHOWHELP_DEPTH_DEFAULT
-  )
+
+  DEFAULT_TABSTRING = "  "
+  DEFAULT_PREFIX_PRETAB = ""
+  DEFAULT_PREFIX_POSTTAB_FIRST = ""
+  DEFAULT_PREFIX_POSTTAB = ""
+  DEFAULT_PREFIX_POSTTAB_LAST = ""
+  DEFAULT_SURROUND_LEFT_REQUIRED = "("
+  DEFAULT_SURROUND_RIGHT_REQUIRED = ")"
+  DEFAULT_SURROUND_LEFT_OPTIONAL = "["
+  DEFAULT_SURROUND_RIGHT_OPTIONAL = "]"
+  DEFAULT_SEPARATOR = "|"
+  DEFAULT_SHOWHELP_DEPTH = 2
+
+  #DEFAULT_SHOWHELP_SETTINGS* = (
+  #  tabstring: "  ",
+  #  prefix_pretab: "",
+  #  prefix_posttab_first: "",
+  #  prefix_posttab: "",
+  #  prefix_posttab_last: "",
+  #  surround_left_required: "(",
+  #  surround_right_required: ")",
+  #  surround_left_optional: "[",
+  #  surround_right_optional: "]",
+  #  separator: "|",
+  #  showhelp_depth: SHOWHELP_DEPTH_DEFAULT
+  #)
 
 type
-  HelpSettings* = tuple[
-    tabstring: string,
-    prefix_pretab: string,
-    prefix_posttab_first: string,
-    prefix_posttab: string,
-    prefix_posttab_last: string,
-    surround_left_required: string,
-    surround_right_required: string,
-    surround_left_optional: string,
-    surround_right_optional: string,
-    separator: string,
-    showhelp_depth: int
-  ]
+  HelpSettings* = object
+    tabstring*: string = DEFAULT_TABSTRING
+    prefix_pretab*: string = DEFAULT_PREFIX_PRETAB
+    prefix_posttab_first*: string = DEFAULT_PREFIX_POSTTAB_FIRST
+    prefix_posttab*: string = DEFAULT_PREFIX_POSTTAB
+    prefix_posttab_last*: string = DEFAULT_PREFIX_POSTTAB_LAST
+    surround_left_required*: string = DEFAULT_SURROUND_LEFT_REQUIRED
+    surround_right_required*: string = DEFAULT_SURROUND_RIGHT_REQUIRED
+    surround_left_optional*: string = DEFAULT_SURROUND_LEFT_OPTIONAL
+    surround_right_optional*: string = DEFAULT_SURROUND_RIGHT_OPTIONAL
+    separator*: string = DEFAULT_SEPARATOR
+    showhelp_depth*: int = DEFAULT_SHOWHELP_DEPTH
 
   ArgumentType* = enum
     Command
@@ -163,25 +174,24 @@ func getUnnamedArguments*(arguments: seq[Argument]): seq[Argument] =
 
 func argument_to_string_without_description*(
   argument: Argument,
-  settings: HelpSettings = DEFAULT_SHOWHELP_SETTINGS,
+  settings: HelpSettings = HelpSettings(),
   #depth: int = 0,
   #is_first: bool = true,
   #is_last: bool = false
 ): string =
   let
-    (
-      tabstring,
-      prefix_pretab,
-      prefix_posttab_first,
-      prefix_posttab,
-      prefix_posttab_last,
-      surround_left_required,
-      surround_right_required,
-      surround_left_optional,
-      surround_right_optional,
-      separator,
-      showhelp_depth
-    ) = settings
+    tabstring = settings.tabstring
+    prefix_pretab = settings.prefix_pretab
+    prefix_posttab_first = settings.prefix_posttab_first
+    prefix_posttab = settings.prefix_posttab
+    prefix_posttab_last = settings.prefix_posttab_last
+    surround_left_required = settings.surround_left_required
+    surround_right_required = settings.surround_right_required
+    surround_left_optional = settings.surround_left_optional
+    surround_right_optional = settings.surround_right_optional
+    separator = settings.separator
+    #showhelp_depth = settings.showhelp_depth
+
     #tabrepeat = tabstring.repeat(depth)
     tabrepeat = ""
     #posttab = (

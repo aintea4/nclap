@@ -133,7 +133,7 @@ template error_exit(
 
 func newParser*(
   help_message: string = "",
-  settings: HelpSettings = DEFAULT_SHOWHELP_SETTINGS,
+  settings: HelpSettings = HelpSettings(),
   enforce_short: bool = DEFAULT_ENFORCE_SHORT,
   no_colors: bool = NO_COLORS,
   exit_on_error: bool = EXIT_ON_ERROR
