@@ -12,6 +12,7 @@ const
   COMMAND_REQUIRED_DEFAULT* = true
   UNNAMED_ARGUMENT_PREFIX* = "$"
   HOLDS_VALUE_DEFAULT* = false
+  NO_CHECK_DEFAULT* = false
 
   DEFAULT_TABSTRING = "  "
   DEFAULT_PREFIX_PRETAB = ""
@@ -68,6 +69,7 @@ type
       of Flag:
         short*: string
         long*: string
+        no_check*: bool  # NOTE: if set and flag is registered in argv, discards required cliargs check
 
       of Command:
         name*: string
@@ -83,6 +85,7 @@ func newFlag*(
   description: string = "",
   holds_value: bool = FLAG_HOLDS_VALUE_DEFAULT,
   required: bool = FLAG_REQUIRED_DEFAULT,
+  no_check: bool = NO_CHECK_DEFAULT,
   default: Option[string] = none[string]()
 ): Argument =
   Argument(
@@ -92,6 +95,7 @@ func newFlag*(
     description: description,
     holds_value: holds_value,
     required: required,
+    no_check: no_check,
     default: default
   )
 
@@ -283,8 +287,6 @@ func argument_to_string_without_description_maxlength*(
       )
 
     res = max(res, max(tmp, tmp_rec))
-    debugEcho &"current arg={argname},{res=}\n"
-    #res = max(res, tmp_rec)
 
   res
 

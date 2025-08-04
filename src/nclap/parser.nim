@@ -250,6 +250,7 @@ proc addFlag*(
   description: string = long,
   holds_value: bool = FLAG_HOLDS_VALUE_DEFAULT,
   required: bool = FLAG_REQUIRED_DEFAULT,
+  no_check: bool = NO_CHECK_DEFAULT,
   default: Option[string] = none[string]()
 ): var Parser {.discardable.} =
   # NOTE: this is a design choice, long flags can start with only a dash,
@@ -266,7 +267,7 @@ proc addFlag*(
       newSeq[Argument]()
     )
 
-  parser.addArgument(newFlag(short, long, description, holds_value, required, default))
+  parser.addArgument(newFlag(short, long, description, holds_value, required, no_check, default))
 
 
 proc addUnnamedArgument*(
@@ -720,6 +721,9 @@ func checkForMissingRequired(
   type T = seq[(Argument, CLIArg)]
 
   if valid_arguments.len == 0:
+    return none[T]()
+
+  if valid_arguments.any(flag => flag.kind == Flag and flag.no_check and cliargFromArgument(cliargs, flag).registered):
     return none[T]()
 
   let
