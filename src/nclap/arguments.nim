@@ -23,7 +23,7 @@ const
   DEFAULT_SURROUND_LEFT_OPTIONAL = "["
   DEFAULT_SURROUND_RIGHT_OPTIONAL = "]"
   DEFAULT_SEPARATOR = "|"
-  DEFAULT_SHOWHELP_DEPTH = 2
+  DEFAULT_SHOWHELP_DEPTH = 1
 
   #DEFAULT_SHOWHELP_SETTINGS* = (
   #  tabstring: "  ",
@@ -180,11 +180,11 @@ func argument_to_string_without_description*(
   #is_last: bool = false
 ): string =
   let
-    tabstring = settings.tabstring
+    #tabstring = settings.tabstring
     prefix_pretab = settings.prefix_pretab
-    prefix_posttab_first = settings.prefix_posttab_first
-    prefix_posttab = settings.prefix_posttab
-    prefix_posttab_last = settings.prefix_posttab_last
+    #prefix_posttab_first = settings.prefix_posttab_first
+    #prefix_posttab = settings.prefix_posttab
+    #prefix_posttab_last = settings.prefix_posttab_last
     surround_left_required = settings.surround_left_required
     surround_right_required = settings.surround_right_required
     surround_left_optional = settings.surround_left_optional
@@ -221,7 +221,8 @@ func argument_to_string_without_description*(
       var res = ""
 
       let
-        usage = &"{surround_left}{argument.name}{surround_right}"
+        #usage = &"{surround_left}{argument.name}{surround_right}"
+        usage = &"{argument.name}"
         #desc = &"{argument.description}"
 
       res &= &"{prefix_pretab}{tabrepeat}{posttab}{usage}"
@@ -238,6 +239,54 @@ func argument_to_string_without_description*(
     of UnnamedArgument:
       &"{tabrepeat}({argument.ua_name})"
       #&"[WARNING]: still not implemented"
+
+
+func argument_to_string_without_description_maxlength*(
+  arguments: seq[Argument],
+  indent_desc: int,
+  tabstring_len: int,
+  maxdepth: int = 0,
+  depth: int = 0
+): int =
+  if depth > maxdepth:
+    return -1
+
+  var res = 0
+
+  for argument in arguments:
+    let argname =
+      case argument.kind:
+        of Flag: &"{argument.short}|{argument.long}"
+        of UnnamedArgument: argument.ua_name
+        of Command: argument.name
+
+
+
+    let
+      tmp = argument_to_string_without_description(argument).len - (
+        if argument.description == "": indent_desc
+        else: 0
+      )
+      tmp_rec = (
+        if argument.kind == Command and depth < maxdepth:
+          let k = argument_to_string_without_description_maxlength(
+            argument.subcommands,
+            tabstring_len,
+            indent_desc,
+            maxdepth,
+            depth+1
+          )
+
+          if k == -1: -1
+          else: k + (tabstring_len * depth+1)
+        else: -1
+      )
+
+    res = max(res, max(tmp, tmp_rec))
+    debugEcho &"current arg={argname},{res=}\n"
+    #res = max(res, tmp_rec)
+
+  res
 
 
 #func helpToString*(

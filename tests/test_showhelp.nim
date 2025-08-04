@@ -3,7 +3,7 @@ import
   testutils
 
 test "customizing help message":
-  var p = newParser("customizing help message")
+  var p = newParser("customizing help message", settings=HelpSettings(showhelp_depth: 2))
 
   initParser(p):
     Flag("-h", "--help", "shows this message")
@@ -24,6 +24,8 @@ test "customizing help message":
       Command("task", "removes a project"):
         UnnamedArgument("name")
         Flag("-n", "--no-log", "does not log the deletion")
+        Command("status"):
+          UnnamedArgument("status-kind", "desc here")
 
     Command("list", ""):
       Flag("-a", "--all", "lists all tasks, even the hidden ones")

@@ -21,7 +21,7 @@ const
   DEFAULT_ENFORCE_SHORT* = false
   NO_COLORS* = false
   EXIT_ON_ERROR* = true
-  TABDESC_LENGTH = 4
+  TABDESC_LENGTH = 2
 
 
 type
@@ -47,14 +47,14 @@ proc showHelpAux(
   exit_code: Natural = 0,
   depth: Natural = 0,
 ) =
-  if depth >= parser.help_settings.showhelp_depth:
+  if depth > parser.help_settings.showhelp_depth:
     return
 
   let indent_str = (parser.help_settings.tabstring).repeat(depth)
   var called_subcommand = false
 
   for arg in arguments:
-    if arg.kind == Command and depth+1 < parser.help_settings.showhelp_depth:
+    if arg.kind == Command and depth < parser.help_settings.showhelp_depth:
       printfun ""
 
     let arg_str = alignLeft(indent_str & argument_to_string_without_description(arg), min_tabdesc_pad + TABDESC_LENGTH) & arg.description
@@ -64,7 +64,15 @@ proc showHelpAux(
     let has_subcommands = arg.kind == Command and arg.subcommands.len != 0
 
     if has_subcommands:
-      showHelpAux(parser, arg.subcommands, printfun, tabdesc_length, min_tabdesc_pad, exit_code, depth+1)
+      showHelpAux(
+        parser,
+        arg.subcommands,
+        printfun,
+        tabdesc_length,
+        min_tabdesc_pad,
+        exit_code,
+        depth+1
+      )
       called_subcommand = true
 
 
@@ -83,9 +91,17 @@ proc showHelp*(
     )
 
     # TODO: maybe check the biggest recursively, for the moment it only works with `showhelp_depth` equal to 2
-    min_tabdesc_pad = parser.arguments
-      .map(arg => argument_to_string_without_description(arg).len)
-      .max()
+    #min_tabdesc_pad = parser.arguments
+    #  .map(arg => argument_to_string_without_description(arg).len)
+    #  .max()
+
+    # FIXME: if doesn't work, change from `args` to `parser.args`
+    min_tabdesc_pad = argument_to_string_without_description_maxlength(
+      args,
+      parser.help_settings.tabstring.len,
+      TABDESC_LENGTH,
+      parser.help_settings.showhelp_depth
+    )
 
     arguments = args
       .map(arg => (
