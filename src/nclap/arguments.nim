@@ -19,8 +19,8 @@ const
   DEFAULT_PREFIX_POSTTAB_FIRST = ""
   DEFAULT_PREFIX_POSTTAB = ""
   DEFAULT_PREFIX_POSTTAB_LAST = ""
-  DEFAULT_SURROUND_LEFT_REQUIRED = "("
-  DEFAULT_SURROUND_RIGHT_REQUIRED = ")"
+  DEFAULT_SURROUND_LEFT_REQUIRED = "<"
+  DEFAULT_SURROUND_RIGHT_REQUIRED = ">"
   DEFAULT_SURROUND_LEFT_OPTIONAL = "["
   DEFAULT_SURROUND_RIGHT_OPTIONAL = "]"
   DEFAULT_SEPARATOR = "|"
@@ -241,7 +241,7 @@ func argument_to_string_without_description*(
       res
 
     of UnnamedArgument:
-      &"{tabrepeat}({argument.ua_name})"
+      &"{tabrepeat}{surround_left_required}{argument.ua_name}{surround_right_required}"
       #&"[WARNING]: still not implemented"
 
 

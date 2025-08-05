@@ -35,7 +35,7 @@ test "customizing help message":
 
   #p.showHelp()
 
-  let args = p.parse()
+  let args = p.parse(@["--help"])
 
   if ?args.help:
     p.showHelp()
