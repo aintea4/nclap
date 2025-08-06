@@ -108,6 +108,12 @@ template `@`*(cliarg: CLIArg, name: untyped): CLIArg =
 template `@`*(cliargs: CLIArgs, name: untyped): CLIArg =
   cliargs[astToStr(name)]
 
+template `%`*(cliarg: CLIArg, name: untyped): CLIArg =
+  cliarg.subarguments[astToStr(name)]
+
+template `%`*(cliargs: CLIArgs, name: untyped): CLIArg =
+  cliargs[astToStr(name)]
+
 
 template `.`*(cliarg: CLIArg, name: untyped): untyped =
   let name_str = astToStr(name).replace('_', '-')
