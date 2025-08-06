@@ -26,7 +26,7 @@ import
   std/options,
   nclap
 
-var p = newParser("example number 2, commands only")
+var p = newParser("simple todo list app")
 
 initParser(p):
   Flag("-l", "--log-file", "file to log the adds/removes in", holds_value=true, default=some("/dev/null"))
@@ -48,15 +48,15 @@ echo "Logfile: " & !args.log_file
 
 commandMatch:
 of args@add:
-  echo "Adding task " & !((args@add).name)
+  echo "Adding task " & !(args@add).name
 
-  if ?((args@add).alias):
-    echo "It has the associated alias " & !((args@add).alias)
+  if ?(args@add).alias:
+    echo "It has the associated alias " & !(args@add).alias
 
 of args@remove:
-  echo "Removing task" & !((args@remove).name)
+  echo "Removing task" & !(args@remove).name
 
-  if ?((args@add).no_resolve_alias):
+  if ?(args@add).no_resolve_alias:
     echo "Not resolving any alias it could have"
 
 of args@list@all:
