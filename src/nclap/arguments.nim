@@ -264,11 +264,10 @@ func argument_to_string_without_description_maxlength*(
         of UnnamedArgument: argument.ua_name
         of Command: argument.name
 
-
-
     let
       tmp = argument_to_string_without_description(argument).len - (
-        if argument.description == "": indent_desc
+        #if argument.description == "": indent_desc
+        if argument.description == "": 0
         else: 0
       )
       tmp_rec = (
@@ -282,7 +281,7 @@ func argument_to_string_without_description_maxlength*(
           )
 
           if k == -1: -1
-          else: k + (tabstring_len * depth+1)
+          else: k + (tabstring_len * depth)
         else: -1
       )
 
