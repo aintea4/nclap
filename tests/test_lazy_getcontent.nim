@@ -18,5 +18,3 @@ test "customizing help message":
     quit(1)
 
   echo (args.text !! readAll(stdin))
-  #expandMacros:
-  #  (args.text !! readAll(stdin))

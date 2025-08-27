@@ -78,7 +78,8 @@ func concatCLIArgs*(a, b: CLIArgs): CLIArgs =
 
 
 #template getContent*(cliarg: CLIArg, default_value: string = DEFAULT_CONTENT, error: bool = false): string =
-func getContent*(cliarg: CLIArg, default_value: string = DEFAULT_CONTENT, error: bool = false): string =
+#template getContent*(cliarg: CLIArg, default_value: string = DEFAULT_CONTENT, error: bool = false): string =
+template getContent*(cliarg: CLIArg, default_value: untyped, error: bool = false): string =
   ##[ Gets the content of a CLIArg, if no value was found, returns the default
       value (or throw an error if `error` is set to `true`)
   ]##
