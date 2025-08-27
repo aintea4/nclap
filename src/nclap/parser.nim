@@ -550,10 +550,22 @@ proc parseArgs(
     let
       new_depth = parser.parseFlags(res, argv, depth, some[seq[Argument]](valid_arguments))
       argv_rest = argv[new_depth..^1]
-      (next, argv_rest2) = parser.parseArgs(argv, new_depth, some[seq[Argument]](valid_arguments))
+      #(next, argv_rest2) = parser.parseArgs(argv, new_depth, some[seq[Argument]](valid_arguments))
+
+    debugEcho "before bug"
+    let (next, argv_rest2) = parser.parseArgs(argv, new_depth, some[seq[Argument]](valid_arguments))
+    debugEcho "before bug"
 
     # NOTE: This works, but if bugs (duplicates more precisely) try to put `argv_rest2` instead of `argv_rest`
-    return (concatCLIArgs(res, next), argv_rest)
+    #return (concatCLIArgs(res, next), argv_rest)
+    debugEcho "before assignation"
+    let
+      a = concatCLIArgs(res, next)
+      b = argv_rest
+
+    debugEcho "before return"
+
+    return (a, b)
   else:
     if (
       let otype: Option[Argument] = valid_arguments.getFirstUnregisteredUnnamedArgument(res, parser)
@@ -771,11 +783,21 @@ proc parse*(parser: Parser, argv: seq[string]): CLIArgs =
   #  parser.showHelp()
 
   let
-    argv = (if parser.enforce_short: expandArgvShortFlags(argv) else: argv)
-    (res, _) = parser.parseArgs(argv, 0, none[seq[Argument]]())
+    argv =
+      if parser.enforce_short: expandArgvShortFlags(argv)
+      else: argv
+    #(res, _) = parser.parseArgs(argv, 0, none[seq[Argument]]())
+
+  debugEcho "before parseArgs MAIN PARSE"
+  let (res, t) = parser.parseArgs(argv, 0, none[seq[Argument]]())
+  #assert t.len == 0, "rest ('t') is not empty"
+  debugEcho res
+  debugEcho t
+  debugEcho "after parseArgs MAIN PARSE"
 
   let missing_required_o = checkForMissingRequired(parser.arguments, res)
 
+  echo "checking missing"
   if missing_required_o.isSome:
     assert missing_required_o.get().len != 0
 

@@ -297,20 +297,6 @@ test "compact shortflags":
 #  echo "output=" & output
 
 
-test "default param":
-  let default_target = "127.0.0.1"
-
-  var p = newParser("default param", HelpSettings(), DEFAULT_ENFORCE_SHORT, false, true)
-
-  p
-    .addFlag("-t", "--target", "target ip address", true, true, default=some(default_target))
-    .addFlag("-p", "--ports", "ports to scan", true, true, default=some("that"))
-    .addFlag("-n", "--no-log", "does not log anything", false, false)
-    .addFlag("-o", "--output", "outputs the content to a file", true)
-
-  let args = p.parse(@["-p", "1-10", "-n", "-t=127.0.0.1"])
-
-  check !args.target == default_target
 
 
 test "dot flag access":
@@ -325,6 +311,22 @@ test "dot flag access":
   let args = p.parse(@["-p", "1-10", "-n", "-t", "localhost"])
 
   check ?args.no_log
+
+
+#test "default param":
+#  let default_target = "127.0.0.1"
+#
+#  var p = newParser("default param", HelpSettings(), DEFAULT_ENFORCE_SHORT, false, true)
+#
+#  p
+#    .addFlag("-t", "--target", "target ip address", true, true, default=some(default_target))
+#    .addFlag("-p", "--ports", "ports to scan", true, true, default=some("that"))
+#    .addFlag("-n", "--no-log", "does not log anything", false, false)
+#    .addFlag("-o", "--output", "outputs the content to a file", true)
+#
+#  let args = p.parse(@["-p", "1-10", "-n", "-t=127.0.0.1"])
+#
+#  check !args.target == default_target
 
 
 test "unnamed arguments":

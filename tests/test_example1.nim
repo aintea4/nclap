@@ -1,4 +1,5 @@
 import
+  std/options,
   nclap,
   testutils
 
@@ -15,4 +16,6 @@ test "example 1":
   let args = p.parse(@["-vv", "-o=output_file"])
 
   check ?args.verbose
-  check !args.output == "output_file"
+  #check !args.output == "output_file"
+  #check (args.output.content.get) == "output_file"
+  check (!(args.output)) == "output_file"

@@ -77,22 +77,31 @@ func concatCLIArgs*(a, b: CLIArgs): CLIArgs =
   res
 
 
-func getContent*(cliarg: CLIArg, default: string = DEFAULT_CONTENT, error: bool = false): string =
+#template getContent*(cliarg: CLIArg, default_value: string = DEFAULT_CONTENT, error: bool = false): string =
+func getContent*(cliarg: CLIArg, default_value: string = DEFAULT_CONTENT, error: bool = false): string =
   ##[ Gets the content of a CLIArg, if no value was found, returns the default
       value (or throw an error if `error` is set to `true`)
   ]##
 
+  if cliarg.content.isNone and cliarg.default.isNone and error:
+    raise newException(ValueError, "No content in CLIArg")
+
+  #if cliarg.content.isSome: cliarg.content.get
   if cliarg.content.isSome: cliarg.content.get
   elif cliarg.default.isSome: cliarg.default.get
   elif error: raise newException(ValueError, "No content in CLIArg")
-  else: default
+  else: default_value
 
 
 template `!!`*(cliarg: CLIArg, default: string): string =
   cliarg.getContent(default, error=false)
 
 template `!`*(cliarg: CLIArg): string =
-  cliarg.getContent(error=true)
+  #cliarg.getContent(error=true)
+
+  if cliarg.content.isSome: cliarg.content.get()
+  elif cliarg.default.isSome: cliarg.default.get()
+  else: raise ValueError.newException("no content in cliarg")
 
 
 template `?`*(cliarg: CLIArg): bool =
