@@ -552,18 +552,13 @@ proc parseArgs(
       argv_rest = argv[new_depth..^1]
       #(next, argv_rest2) = parser.parseArgs(argv, new_depth, some[seq[Argument]](valid_arguments))
 
-    debugEcho "before bug"
     let (next, argv_rest2) = parser.parseArgs(argv, new_depth, some[seq[Argument]](valid_arguments))
-    debugEcho "before bug"
 
     # NOTE: This works, but if bugs (duplicates more precisely) try to put `argv_rest2` instead of `argv_rest`
     #return (concatCLIArgs(res, next), argv_rest)
-    debugEcho "before assignation"
     let
       a = concatCLIArgs(res, next)
       b = argv_rest
-
-    debugEcho "before return"
 
     return (a, b)
   else:
@@ -747,9 +742,6 @@ func checkForMissingRequired(
       .filter(cmd_pair => not cmd_pair[1].registered and cmd_pair[0].default.isNone)
 
   if required_not_registered_pair.len > 0:
-    #debugEcho cliargs
-    #debugEcho required_not_registered_pair
-
     return some[T](required_not_registered_pair)
 
   if valid_arguments.getCommands().len == 0:
@@ -788,12 +780,8 @@ proc parse*(parser: Parser, argv: seq[string]): CLIArgs =
       else: argv
     #(res, _) = parser.parseArgs(argv, 0, none[seq[Argument]]())
 
-  debugEcho "before parseArgs MAIN PARSE"
   let (res, t) = parser.parseArgs(argv, 0, none[seq[Argument]]())
   #assert t.len == 0, "rest ('t') is not empty"
-  debugEcho res
-  debugEcho t
-  debugEcho "after parseArgs MAIN PARSE"
 
   let missing_required_o = checkForMissingRequired(parser.arguments, res)
 
