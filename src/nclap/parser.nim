@@ -785,7 +785,6 @@ proc parse*(parser: Parser, argv: seq[string]): CLIArgs =
 
   let missing_required_o = checkForMissingRequired(parser.arguments, res)
 
-  echo "checking missing"
   if missing_required_o.isSome:
     assert missing_required_o.get().len != 0
 
