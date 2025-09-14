@@ -120,7 +120,7 @@ template `@`*(cliargs: CLIArgs, name: untyped): CLIArg =
   cliargs[astToStr(name)]
 
 
-template `.`*(cliarg: CLIArg, name: untyped): untyped =
+template `.`*(cliarg: CLIArg, name: untyped): CLIArg =
   let name_str = astToStr(name).replace('_', '-')
 
   if cliarg.subarguments.hasKey("-" & name_str): cliarg.subarguments["-" & name_str]
@@ -128,7 +128,7 @@ template `.`*(cliarg: CLIArg, name: untyped): untyped =
   elif cliarg.subarguments.hasKey(UNNAMED_ARGUMENT_PREFIX & name_str): cliarg.subarguments[UNNAMED_ARGUMENT_PREFIX & name_str]
   else: raise newException(KeyError, "Key \"" & name_str & "\" not found in CLIArgs")
 
-template `.`*(cliargs: CLIArgs, name: untyped): untyped =
+template `.`*(cliargs: CLIArgs, name: untyped): CLIArg =
   let name_str = astToStr(name).replace('_', '-')
 
   if cliargs.hasKey("-" & name_str): cliargs["-" & name_str]
