@@ -1,5 +1,9 @@
 import
-  std/macros,
+  std/[
+    macros,
+    sugar
+  ],
+
   nclap,
   testutils
 
@@ -17,4 +21,4 @@ test "customizing help message":
     parser.showHelp()
     quit(1)
 
-  echo (args.text !! readAll(stdin))
+  echo (args.text !! (() => readAll(stdin)))

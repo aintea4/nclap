@@ -1,4 +1,5 @@
 import std/[
+  sugar,
   tables,
   strformat,
   strutils,
@@ -17,8 +18,12 @@ type
 
   CLIArgs* = OrderedTable[string, CLIArg]
 
+  LazyString = () -> string
+
+
 const
   DEFAULT_CONTENT = ""
+  DEFAULT_LAZY_STRING = (() => DEFAULT_CONTENT)
   DEFAULT_CLIARG = CLIArg(content: none[string](), default: none[string](), registered: false, subarguments: initOrderedTable[string, CLIArg]())
 
 func `$`*(cliarg: CLIArg): string =
@@ -79,30 +84,26 @@ func concatCLIArgs*(a, b: CLIArgs): CLIArgs =
 
 #template getContent*(cliarg: CLIArg, default_value: string = DEFAULT_CONTENT, error: bool = false): string =
 #template getContent*(cliarg: CLIArg, default_value: string = DEFAULT_CONTENT, error: bool = false): string =
-template getContent*(cliarg: CLIArg, default_value: untyped, error: bool = false): string =
+#template getContent*(cliarg: CLIArg, default_value: untyped, error: bool = false): string =
+proc getContent*(cliarg: CLIArg, default_value: LazyString = DEFAULT_LAZY_STRING, error: bool = false): string =
   ##[ Gets the content of a CLIArg, if no value was found, returns the default
       value (or throw an error if `error` is set to `true`)
   ]##
 
-  if cliarg.content.isNone and cliarg.default.isNone and error:
-    raise newException(ValueError, "No content in CLIArg")
+  #if cliarg.content.isNone and cliarg.default.isNone and error:
+  #  raise newException(ValueError, "No content in CLIArg")
 
-  #if cliarg.content.isSome: cliarg.content.get
   if cliarg.content.isSome: cliarg.content.get
   elif cliarg.default.isSome: cliarg.default.get
   elif error: raise newException(ValueError, "No content in CLIArg")
-  else: default_value
+  else: default_value()
 
 
-template `!!`*(cliarg: CLIArg, default: string): string =
+template `!!`*(cliarg: CLIArg, default: LazyString): string =
   cliarg.getContent(default, error=false)
 
 template `!`*(cliarg: CLIArg): string =
-  #cliarg.getContent(error=true)
-
-  if cliarg.content.isSome: cliarg.content.get()
-  elif cliarg.default.isSome: cliarg.default.get()
-  else: raise ValueError.newException("no content in cliarg")
+  cliarg.getContent(error=true)
 
 
 template `?`*(cliarg: CLIArg): bool =
@@ -116,12 +117,6 @@ template `@`*(cliarg: CLIArg, name: untyped): CLIArg =
   cliarg.subarguments[astToStr(name)]
 
 template `@`*(cliargs: CLIArgs, name: untyped): CLIArg =
-  cliargs[astToStr(name)]
-
-template `%`*(cliarg: CLIArg, name: untyped): CLIArg =
-  cliarg.subarguments[astToStr(name)]
-
-template `%`*(cliargs: CLIArgs, name: untyped): CLIArg =
   cliargs[astToStr(name)]
 
 
